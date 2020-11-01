@@ -73,4 +73,5 @@ class Product extends Model implements AuthenticatableContract, AuthorizableCont
 
         return $all;
     }
+
 }

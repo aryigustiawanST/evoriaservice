@@ -43,7 +43,7 @@ $router->group(['prefix' => 'productcategory'], function() use ($router) {
 
 $router->group(['prefix' => 'client'], function() use ($router){
     $router->post('profile', ['uses' => 'ClientController@profile']);
-    $router->post('saveprofile', ['uses' => 'ClientController@saveprofile']);   
+    $router->post('saveprofile', ['uses' => 'ClientController@saveprofile']);
     $router->post('profile/saveaddress', ['uses' => 'ClientController@saveaddress']);
     $router->post('profile/saverekening', ['uses' => 'ClientController@saverekening']);
 
@@ -52,13 +52,17 @@ $router->group(['prefix' => 'client'], function() use ($router){
 
     $router->post('feed/addcomment', ['uses' => 'FeedController@addcomment']);
     // $router->post('feed/removelike', ['uses' => 'FeedController@removelike']);
+
+    $router->get('wishlist/{user_id}', ['uses' => 'WishlistController@list']);
+    $router->post('wishlist/add', ['uses' => 'WishlistController@add']);
+    $router->post('wishlist/remove', ['uses' => 'WishlistController@remove']);
 });
 $router->group(['prefix' => 'page'], function() use ($router){
     $router->get('home/top_menu', ['uses' => 'TopMenuController@index']);
-    $router->post('home/top_menu/add', ['uses' => 'TopMenuController@add']);    
+    $router->post('home/top_menu/add', ['uses' => 'TopMenuController@add']);
     $router->post('home/top_menu/edit/{id}', ['uses' => 'TopMenuController@edit']);
     $router->post('home/top_menu/delete/{id}', ['uses' => 'TopMenuController@delete']);
-    
+
     $router->get('home/feed', ['uses' => 'FeedController@index']);
     $router->get('home/feed/vendor/{id}', ['uses' => 'FeedController@show']);
     $router->post('home/feed/add', ['uses' => 'FeedController@add']);
@@ -84,9 +88,9 @@ $router->group(['prefix' => 'vendor'], function() use ($router){
     $router->get('product/variasi/list', ['uses' => 'ProductController@variasilist']);
     $router->post('product/variasi/nilai', ['uses' => 'ProductController@variasinilai']);
     $router->post('product/variasi/addnilai', ['uses' => 'ProductController@addvariasinilai']);
-    
+
     $router->post('product/variant/update', ['uses' => 'ProductController@updatevariant']);
-    
+
     $router->post('product/photo/update', ['uses' => 'ProductController@updatephoto']);
 
     $router->post('edit/{id}', ['uses' => 'ProductController@edit']);
