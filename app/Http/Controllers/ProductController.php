@@ -25,20 +25,20 @@ class ProductController extends Controller
 
     public function show(Request $request, $id)
     {
-        $query = app('db')->select("SELECT product_core.*, category_core.category_name, category_core.category_detail 
-        FROM product_core 
+        $query = app('db')->select("SELECT product_core.*, category_core.category_name, category_core.category_detail
+        FROM product_core
         LEFT JOIN category_core ON category_core.category_id = product_core.category_id
-        WHERE vendor_id = $id ORDER BY product_id DESC");   
+        WHERE vendor_id = $id ORDER BY product_id DESC");
 
         if(!empty($query)) {
             foreach($query as $q) {
 
                 $proDetail = $q->product_detail;
                 $dJson = json_decode($proDetail,TRUE);
-                
+
                 $catDetail = $q->category_detail;
                 $catJson = json_decode($catDetail,TRUE);
-                
+
                 $photoDetail = $q->photo_detail;
                 $photoJson = json_decode($photoDetail,TRUE);
                 //var_dump(json_decode($photoDetail));die;
@@ -54,8 +54,8 @@ class ProductController extends Controller
                     'base_price' => $q->base_price,
                     'base2_price' => $q->base2_price,
                     'photo_detail' => $photoJson,
-                    'product_detail' => $dJson,      
-                    'product_tag' => $q->product_tag,                    
+                    'product_detail' => $dJson,
+                    'product_tag' => $q->product_tag,
                 );
 
                 $all[] = $output;
@@ -75,9 +75,9 @@ class ProductController extends Controller
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'tidak ada data',	
+                        'message' => 'tidak ada data',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -87,42 +87,10 @@ class ProductController extends Controller
 
     public function productid(Request $request, $id)
     {
-        $query = app('db')->select("SELECT product_core.*, category_core.category_name, category_core.category_detail 
-        FROM product_core 
-        LEFT JOIN category_core ON category_core.category_id = product_core.category_id
-        WHERE product_id = $id");   
+        $all = Product::get_by_id($id);
+        //dd($all);
 
-        if(!empty($query)) {
-
-            foreach($query as $q) {
-
-                $proDetail = $q->product_detail;
-                $dJson = json_decode($proDetail,TRUE);
-                
-                $catDetail = $q->category_detail;
-                $catJson = json_decode($catDetail,TRUE);
-                
-                $photoDetail = $q->photo_detail;
-                $photoJson = json_decode($photoDetail,TRUE);
-                //var_dump(json_decode($photoDetail));die;
-                //var_dump ($photoDetail);die;
-                $output = array(
-                    'vendor_id' => $q->vendor_id,
-                    'product_id' => $q->product_id,
-                    'category_id' => $q->category_id,
-                    'category_name' => $q->category_name,
-                    'category_detail' => $catJson,
-                    'product_name' => $q->product_name,
-                    'product_description' => $q->product_description,
-                    'base_price' => $q->base_price,
-                    'base2_price' => $q->base2_price,
-                    'photo_detail' => $photoJson,
-                    'product_detail' => $dJson,                          
-                );
-
-                $all[] = $output;
-
-            }
+        if(!empty($all)) {
 
             $results = array(
                 "status" => 'sukses',
@@ -137,9 +105,9 @@ class ProductController extends Controller
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'tidak ada data',	
+                        'message' => 'tidak ada data',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -161,20 +129,20 @@ class ProductController extends Controller
              'product_tag' => 'required',
         ]);
 
-        $photo =  '{';        
+        $photo =  '{';
         if($request->hasfile('photo_detail'))
-        {     
+        {
             $i = 1;
-            $koma = ",";  	
-            $max_photo=7;	
-            foreach($request->file('photo_detail') as $key => $imagesPD) 
+            $koma = ",";
+            $max_photo=7;
+            foreach($request->file('photo_detail') as $key => $imagesPD)
                 {
                 //upload file if exist
                 $file = $imagesPD->getClientOriginalName();
                 $name = $file;
-                $destinationPath ="images/products/"; 
+                $destinationPath ="images/products/";
                 $imagesPD->move($destinationPath, $name);
-            
+
 
             //$koma = ",";
             //
@@ -182,18 +150,18 @@ class ProductController extends Controller
                 if(count($request->photo_detail) == $i) {
                             $koma = " ";
                         }
-                        $photo .='"'.$key.'":"'.$name.'"'.$koma;    
+                        $photo .='"'.$key.'":"'.$name.'"'.$koma;
                     $i++;
             }
-                
+
             while ($i<=$max_photo) {
             $key = "photo" .$i;
             $photo .='"'.$key.'":"null"'.$koma;
-            
+
             $i++;
-            }	    
+            }
 	    }
-        $photo = rtrim($photo,", ");	
+        $photo = rtrim($photo,", ");
         $photo .= '}';
         //var_dump($photo);
 	    //exit;
@@ -216,12 +184,12 @@ class ProductController extends Controller
         ]);
 
         if ($proses) {
-            
-            $proDetail = $request->product_detail;          
+
+            $proDetail = $request->product_detail;
             $dJson = json_encode($proDetail );
             $json = json_decode($dJson);
             $jsonphoto = json_decode($photo);
-            
+
             $results = array(
                 'status' => 'sukses',
                 'json_data' => array(
@@ -233,18 +201,18 @@ class ProductController extends Controller
                     'product_detail' => $json,
                     'photo_detail' => $jsonphoto,
                     'product_tag' =>  $request->product_tag,
-                ),                    
+                ),
             );
-            
+
         } else {
 
             return response()->json(
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'gagal disimpan',	
+                        'message' => 'gagal disimpan',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -265,13 +233,13 @@ class ProductController extends Controller
             'base2_price' => 'required',
             'vendor_id' => 'required',
             'product_tag' => 'required',
-        ]);        
+        ]);
 
-        $query = app('db')->select("SELECT 
-            photo_detail -> 'photo1' as photo1, 
+        $query = app('db')->select("SELECT
+            photo_detail -> 'photo1' as photo1,
             photo_detail -> 'photo2' as photo2,
             photo_detail -> 'photo3' as photo3,
-            photo_detail -> 'photo4' as photo4, 
+            photo_detail -> 'photo4' as photo4,
             photo_detail -> 'photo5' as photo5,
             photo_detail -> 'photo6' as photo6,
             photo_detail -> 'photo7' as photo7
@@ -336,7 +304,7 @@ class ProductController extends Controller
         if($request->file('photo5')) { $request->file('photo5')->move($destinationPath, $photo5); }
         if($request->file('photo6')) { $request->file('photo6')->move($destinationPath, $photo6); }
         if($request->file('photo7')) { $request->file('photo7')->move($destinationPath, $photo7); }
-        
+
         // print_r($query);
         // exit();
 
@@ -353,12 +321,12 @@ class ProductController extends Controller
         $update->save();
 
         if ($update) {
-            
-            $proDetail = $request->product_detail;          
+
+            $proDetail = $request->product_detail;
             $dJson = json_encode($proDetail);
-            $json = json_decode($dJson); 
+            $json = json_decode($dJson);
             $jsonphoto = json_decode($photodetail);
-            
+
             $results = array(
                 'status' => 'sukses',
                 'json_data' => array(
@@ -370,21 +338,21 @@ class ProductController extends Controller
                     'base2_price' =>  $request->base2_price,
                     'product_detail' => $json,
                     'photo_detail' => $jsonphoto,
-                ),                    
+                ),
             );
-            
+
         } else {
 
             return response()->json(
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'gagal diubah',	
+                        'message' => 'gagal diubah',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
-            
+
         }
 
         return response()->json($results);
@@ -405,14 +373,14 @@ class ProductController extends Controller
         $this->validate($request,[
             'product_id' => 'required',
             'quantity' => 'required',
-        ]);                
-        
+        ]);
+
         $search = app('db')->select("SELECT * FROM product_core WHERE product_id = $request->product_id");
-        
+
         if(!empty($search)) {
-            
+
             foreach($search as $q) {
-            
+
                 $stock = $q->stock + $request->quantity;
 
                 $update = Product::find($request->product_id);
@@ -425,30 +393,30 @@ class ProductController extends Controller
                         'product_id' =>  $request->product_id,
                         'product_name' => $q->product_name,
                         'stock' =>  $stock,
-                    ),                    
+                    ),
                 );
 
                 return response()->json($results);
             }
-            
+
         } else {
 
             return response()->json(
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'gagal diubah',	
+                        'message' => 'gagal diubah',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
-            
+
         }
     }
 
     public function variasilist(Request $request)
     {
-        $query = app('db')->select("SELECT * FROM ref_variant");   
+        $query = app('db')->select("SELECT * FROM ref_variant");
 
         if(!empty($query)) {
 
@@ -456,7 +424,7 @@ class ProductController extends Controller
 
                 $output = array(
                     'nama_variant' => $q->nama_variant,
-                    'value_variant' => $q->value_variant,                
+                    'value_variant' => $q->value_variant,
                 );
 
                 $all[] = $output;
@@ -476,9 +444,9 @@ class ProductController extends Controller
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'tidak ada data',	
+                        'message' => 'tidak ada data',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -491,9 +459,9 @@ class ProductController extends Controller
 
         $this->validate($request,[
             'variant_id' => 'required',
-        ]);        
+        ]);
 
-        $query = app('db')->select("SELECT * FROM ref_variant WHERE id = $request->variant_id");   
+        $query = app('db')->select("SELECT * FROM ref_variant WHERE id = $request->variant_id");
 
         if(!empty($query)) {
 
@@ -503,7 +471,7 @@ class ProductController extends Controller
 
                 $output = array(
                     'variant_id' => $q->id,
-                    'nama_variant' => $variant,                
+                    'nama_variant' => $variant,
                 );
 
                 $all[] = $output;
@@ -523,9 +491,9 @@ class ProductController extends Controller
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'tidak ada data',	
+                        'message' => 'tidak ada data',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -539,9 +507,9 @@ class ProductController extends Controller
         $this->validate($request,[
             'variant_id' => 'required',
             'nilai' => 'required',
-        ]);        
+        ]);
 
-        $query = app('db')->select("SELECT * FROM ref_variant WHERE id = $request->variant_id");   
+        $query = app('db')->select("SELECT * FROM ref_variant WHERE id = $request->variant_id");
 
         if(!empty($query)) {
 
@@ -555,7 +523,7 @@ class ProductController extends Controller
 
                 $output = array(
                     'variant_id' => $q->id,
-                    'value_variant' => $nilaivariant,                
+                    'value_variant' => $nilaivariant,
                 );
 
                 $all[] = $output;
@@ -575,9 +543,9 @@ class ProductController extends Controller
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'tidak ada data',	
+                        'message' => 'tidak ada data',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -594,9 +562,9 @@ class ProductController extends Controller
             // 'variant_name' => 'required',
             // 'variant_status' => 'required',
             // 'variant_value' => 'required',
-        ]);        
+        ]);
 
-        $query = app('db')->select("SELECT * FROM product_core WHERE product_id = $request->product_id");   
+        $query = app('db')->select("SELECT * FROM product_core WHERE product_id = $request->product_id");
 
         if(!empty($query)) {
 
@@ -606,12 +574,12 @@ class ProductController extends Controller
                 $update->product_variant =  json_encode($request->product_variant);
                 $update->save();
 
-                $djson = json_encode($request->product_variant);      
+                $djson = json_encode($request->product_variant);
                 $json = json_decode($djson, TRUE);
 
                 $output = array(
                     'product_id' => $q->product_id,
-                    'product_variant' => $json,                
+                    'product_variant' => $json,
                 );
 
                 $all[] = $output;
@@ -631,9 +599,9 @@ class ProductController extends Controller
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'tidak ada data',	
+                        'message' => 'tidak ada data',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -647,36 +615,36 @@ class ProductController extends Controller
         $this->validate($request,[
             'product_id' => 'required',
             'photo_detail' => 'required',
-        ]);        
+        ]);
 
-        $query = app('db')->select("SELECT * FROM product_core WHERE product_id = $request->product_id");   
+        $query = app('db')->select("SELECT * FROM product_core WHERE product_id = $request->product_id");
 
         if(!empty($query)) {
 
             foreach($query as $q) {
 
-                $photo =  '{';        
+                $photo =  '{';
                 if($request->hasfile('photo_detail'))
-                {     
-                    $i = 1;  
-                    foreach($request->file('photo_detail') as $key => $imagesPD) 
+                {
+                    $i = 1;
+                    foreach($request->file('photo_detail') as $key => $imagesPD)
                     {
                         $file = $imagesPD->getClientOriginalName();
                         $name = $file;
-                        $destinationPath ="images/products/"; 
+                        $destinationPath ="images/products/";
                         $imagesPD->move($destinationPath, $name);
-        
+
                         $koma = ",";
                             if(count($request->photo_detail) == $i) {
                                 $koma = " ";
                             }
-                            $photo .='"'.$key.'":"'.$name.'"'.$koma;    
+                            $photo .='"'.$key.'":"'.$name.'"'.$koma;
                         $i++;
-                    } 
-                    
-                } 
+                    }
+
+                }
                 $photo .= '}';
-        
+
                 if($photo == "{}") { $photo = NULL; }
 
                 $update = Product::find($request->product_id);
@@ -687,7 +655,7 @@ class ProductController extends Controller
 
                 $output = array(
                     'product_id' => $q->product_id,
-                    'photo_detail' => $json,                
+                    'photo_detail' => $json,
                 );
 
                 $all[] = $output;
@@ -707,9 +675,9 @@ class ProductController extends Controller
                 [
                     'status' => 'gagal',
                     'json_data' => array(
-                        'message' => 'tidak ada data',	
+                        'message' => 'tidak ada data',
                     ),
-                ], 400, 
+                ], 400,
                 ['X-Header-One' => 'Header Value']
             );
 
@@ -722,7 +690,7 @@ class ProductController extends Controller
 
     public function showcategory(Request $request)
     {
-        $query = app('db')->select("SELECT * FROM category_core;");   
+        $query = app('db')->select("SELECT * FROM category_core;");
 
         if(!empty($query)) {
 
@@ -730,11 +698,11 @@ class ProductController extends Controller
 
                 $catDetail = $q->category_detail;
                 $dJson = json_decode($catDetail,TRUE);
-                
+
                 $output = array(
                     'category_id' => $q->category_id,
                     'category_name' => $q->category_name,
-                    'category_detail' => $dJson,                    
+                    'category_detail' => $dJson,
                 );
 
                 $all[] = $output;
@@ -772,21 +740,21 @@ class ProductController extends Controller
             'category_detail' => json_encode($request->category_detail),
         ]);
 
-        
+
         if ($proses) {
-            
-            $catDetail = $request->category_detail;          
+
+            $catDetail = $request->category_detail;
             $dJson = json_encode($catDetail);
-            $json = json_decode($dJson); 
-            
+            $json = json_decode($dJson);
+
             $results = array(
                 'status' => 'sukses',
                 'json_data' => array(
                     'category_name' =>  $request->category_name,
                     'category_detail' => $json
-                ),                    
+                ),
             );
-            
+
         } else {
 
             $results = array(
@@ -805,7 +773,7 @@ class ProductController extends Controller
         $this->validate($request,[
             'category_name' => 'required',
             'category_detail' => 'required',
-        ]);        
+        ]);
 
         $update = ProductCategory::find($id);
         $update->category_name = $request->category_name;
@@ -813,26 +781,26 @@ class ProductController extends Controller
         $update->save();
 
         if ($update) {
-            
-            $catDetail = $request->category_detail;          
+
+            $catDetail = $request->category_detail;
             $dJson = json_encode($catDetail);
-            $json = json_decode($dJson); 
-            
+            $json = json_decode($dJson);
+
             $results = array(
                 'status' => 'sukses',
                 'json_data' => array(
                     'category_name' =>  $request->category_name,
                     'category_detail' => $json
-                ),                    
+                ),
             );
-            
+
         } else {
 
             $results = array(
                 "status" => 'gagal',
                 "json_data" => null,
             );
-            
+
         }
 
         return response()->json($results);
